@@ -1,12 +1,10 @@
 {
-  "version": "2026-02-18T19:23:21.763Z",
-  "generatedAt": "2026-02-18T19:23:21.763Z",
+  "version": "2026-02-18T20:00:51.412Z",
+  "generatedAt": "2026-02-18T20:00:51.412Z",
   "components": {
     "button": {
-      "key": "002aca743abbee1ee5a9fd71f463834a7ae332aa",
-      "variantProps": [
-        "variant"
-      ]
+      "key": "1967191bba7addaae1490f54652c539484047a3b",
+      "variantProps": ["variant"]
     }
   }
 }
