@@ -44,22 +44,55 @@ async function main() {
 
       const instance = component.createInstance();
 
-      // Apply variant props
-      if (parts.length > 1) {
-        for (let i = 1; i < parts.length; i++) {
-          const [propName, propValue] = parts[i].split("=");
+// Apply variant props safely
+if (parts.length > 1) {
+  for (let i = 1; i < parts.length; i++) {
+    const [rawPropName, rawPropValue] = parts[i].split("=");
 
-          if (propName && propValue) {
-            try {
-              instance.setProperties({
-                [propName]: propValue
-              });
-            } catch (err) {
-              console.warn("Variant not found:", propName, propValue);
-            }
-          }
-        }
-      }
+    if (!rawPropName || !rawPropValue) continue;
+
+    const availableProps = instance.variantProperties;
+
+    if (!availableProps) continue;
+
+    // Find matching prop name (case-insensitive)
+    const actualPropName = Object.keys(availableProps).find(
+      key => key.toLowerCase() === rawPropName.toLowerCase()
+    );
+
+    if (!actualPropName) {
+      console.warn("Variant property not found:", rawPropName);
+      continue;
+    }
+
+    // Find matching value (case-insensitive)
+    const componentDef = instance.mainComponent;
+    const variantDef =
+      componentDef.variantProperties?.[actualPropName];
+
+    const actualValue = variantDef
+      ? variantDef.values.find(
+          v => v.toLowerCase() === rawPropValue.toLowerCase()
+        )
+      : rawPropValue;
+
+    if (!actualValue) {
+      console.warn("Variant value not found:", rawPropValue);
+      continue;
+    }
+
+    instance.setProperties({
+      [actualPropName]: actualValue
+    });
+
+    console.log(
+      "Applied variant:",
+      actualPropName,
+      "=",
+      actualValue
+    );
+  }
+}
 
       // Replace original node
       instance.x = node.x;
