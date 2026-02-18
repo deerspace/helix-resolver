@@ -3,7 +3,7 @@
 // ========================================
 
 const MANIFEST_URL =
-  "https://raw.githubusercontent.com/deerspace/helix-resolver/refs/heads/main/helix-manifest.json";
+  "https://raw.githubusercontent.com/deerspace/helix-resolver/main/helix-manifest.json";
 
 const MANIFEST_CACHE_KEY = "helix_manifest_cache";
 
