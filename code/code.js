@@ -19,7 +19,19 @@ async function loadManifest() {
       throw new Error("Network response failed: " + response.status);
     }
 
-    const manifest = await response.json();
+    const contentType = response.headers.get("content-type");
+    console.log("Content-Type:", contentType);
+
+    const rawText = await response.text();
+    console.log("Raw response (first 200 chars):", rawText.substring(0, 200));
+
+    let manifest;
+    try {
+      manifest = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error("JSON parse failed:", parseError);
+      throw new Error("Invalid JSON returned from manifest URL");
+    }
 
     // Cache it locally
     await figma.clientStorage.setAsync(MANIFEST_CACHE_KEY, manifest);
