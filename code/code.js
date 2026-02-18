@@ -1,11 +1,9 @@
 // ========================================
-// HELIX RESOLVER — STEP 1 (Manifest Test)
+// HELIX RESOLVER — STEP 8 (Import Instance)
 // ========================================
 
 const MANIFEST_URL =
   "https://raw.githubusercontent.com/deerspace/helix-resolver/main/helix-manifest.json";
-
-const MANIFEST_CACHE_KEY = "helix_manifest_cache";
 
 async function loadManifest() {
   const response = await fetch(MANIFEST_URL);
@@ -29,16 +27,18 @@ async function main() {
 
     // STEP 6: Detect tagged nodes (ds: prefix)
     const allNodes = figma.currentPage.findAll();
-    const taggedNodes = allNodes.filter(node =>
-      typeof node.name === "string" && node.name.startsWith("ds:")
+    const taggedNodes = allNodes.filter(
+      node =>
+        typeof node.name === "string" &&
+        node.name.startsWith("ds:")
     );
 
     console.log("Found tagged nodes:", taggedNodes.length);
 
-    taggedNodes.forEach(node => {
+    for (const node of taggedNodes) {
       console.log("Tagged node:", node.name);
 
-      // STEP 7: Parse tag and look up manifest
+      // STEP 7: Parse tag
       const tag = node.name.replace("ds:", "");
       const parts = tag.split(".");
 
@@ -52,16 +52,58 @@ async function main() {
 
       if (!componentEntry) {
         console.warn("Component not found in manifest:", componentName);
-        return;
+        continue;
       }
 
       console.log("Component key from manifest:", componentEntry.key);
-    });
 
-    figma.notify("Manifest loaded: " + manifest.version);
-    console.log("Manifest contents:", manifest);
+      // STEP 8: Import real component and create instance
+      try {
+        const component = await figma.importComponentByKeyAsync(
+          componentEntry.key
+        );
+
+        const instance = component.createInstance();
+
+        // Apply variant if applicable
+        if (
+          variantToken &&
+          instance.variantProperties &&
+          Object.keys(instance.variantProperties).length > 0
+        ) {
+          const variantPropName =
+            Object.keys(instance.variantProperties)[0];
+
+          instance.setProperties({
+            [variantPropName]: variantToken
+          });
+
+          console.log(
+            "Applied variant:",
+            variantPropName,
+            "=",
+            variantToken
+          );
+        }
+
+        // Position instance near original node
+        instance.x = node.x + 40;
+        instance.y = node.y + 40;
+
+        figma.currentPage.appendChild(instance);
+
+        console.log("Instance created for:", componentName);
+
+      } catch (importError) {
+        console.error("Failed to import component:", importError);
+      }
+    }
+
+    figma.notify("Helix resolve complete");
+
   } catch (err) {
     console.error(err);
+    figma.notify("Resolver error — check console");
   }
 
   figma.closePlugin();
