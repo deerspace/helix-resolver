@@ -33,7 +33,6 @@ async function loadManifest() {
       throw new Error("Invalid JSON returned from manifest URL");
     }
 
-    await figma.clientStorage.setAsync(MANIFEST_CACHE_KEY, manifest);
 
     console.log("Loaded manifest from network:", manifest.version);
     return manifest;
@@ -41,12 +40,6 @@ async function loadManifest() {
   } catch (error) {
     console.warn("Network fetch failed. Trying cache...");
 
-    const cached = await figma.clientStorage.getAsync(MANIFEST_CACHE_KEY);
-
-    if (cached) {
-      console.log("Using cached manifest:", cached.version);
-      return cached;
-    }
 
     figma.notify("No manifest available.");
     throw new Error("Manifest unavailable");
