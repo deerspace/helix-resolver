@@ -1,9 +1,9 @@
 {
-  "version": "2026-02-18T19:09:17.946Z",
-  "generatedAt": "2026-02-18T19:09:17.946Z",
+  "version": "2026-02-18T19:16:20.931Z",
+  "generatedAt": "2026-02-18T19:16:20.931Z",
   "components": {
-    "button": {
-      "key": "d52d47a9889b879db0a011d2435eed45b69e31c6",
+    "variantprimary": {
+      "key": "1967191bba7addaae1490f54652c539484047a3b",
       "variantProps": [
         "variant"
       ]
