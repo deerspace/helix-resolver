@@ -3,7 +3,7 @@
 // ========================================
 
 const MANIFEST_URL =
-  "https://raw.githubusercontent.com/deerspace/helix-resolver/main/helix-manifest.json";
+  "https://raw.githubusercontent.com/deerspace/helix-resolver/main/helix-manifest.json?t=" + Date.now();
 
 async function loadManifest() {
   const response = await fetch(MANIFEST_URL);
