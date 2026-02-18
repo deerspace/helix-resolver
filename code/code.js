@@ -47,34 +47,51 @@ async function main() {
 // Apply variant props safely
 if (parts.length > 1) {
   for (let i = 1; i < parts.length; i++) {
-    const [rawPropName, rawPropValue] = parts[i].split("=");
+    const split = parts[i].split("=");
 
-    if (!rawPropName || !rawPropValue) continue;
+    if (split.length !== 2) continue;
+
+    const rawPropName = split[0];
+    const rawPropValue = split[1];
 
     const availableProps = instance.variantProperties;
-
     if (!availableProps) continue;
 
     // Find matching prop name (case-insensitive)
-    const actualPropName = Object.keys(availableProps).find(
-      key => key.toLowerCase() === rawPropName.toLowerCase()
-    );
+    let actualPropName = null;
+
+    for (const key in availableProps) {
+      if (key.toLowerCase() === rawPropName.toLowerCase()) {
+        actualPropName = key;
+        break;
+      }
+    }
 
     if (!actualPropName) {
       console.warn("Variant property not found:", rawPropName);
       continue;
     }
 
-    // Find matching value (case-insensitive)
-    const componentDef = instance.mainComponent;
-    const variantDef =
-      componentDef.variantProperties?.[actualPropName];
+    // Get allowed values from main component
+    const mainComponent = instance.mainComponent;
+    const variantDefs = mainComponent.variantProperties;
 
-    const actualValue = variantDef
-      ? variantDef.values.find(
-          v => v.toLowerCase() === rawPropValue.toLowerCase()
-        )
-      : rawPropValue;
+    let actualValue = null;
+
+    if (
+      variantDefs &&
+      variantDefs[actualPropName] &&
+      variantDefs[actualPropName].values
+    ) {
+      const values = variantDefs[actualPropName].values;
+
+      for (let j = 0; j < values.length; j++) {
+        if (values[j].toLowerCase() === rawPropValue.toLowerCase()) {
+          actualValue = values[j];
+          break;
+        }
+      }
+    }
 
     if (!actualValue) {
       console.warn("Variant value not found:", rawPropValue);
