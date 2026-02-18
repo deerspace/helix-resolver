@@ -11,8 +11,12 @@ async function loadManifest() {
   try {
     const response = await fetch(MANIFEST_URL);
 
+    console.log("Fetch status:", response.status);
+    console.log("Fetch URL:", MANIFEST_URL);
+
     if (!response.ok) {
-      throw new Error("Network response failed");
+      figma.notify("Fetch failed: " + response.status);
+      throw new Error("Network response failed: " + response.status);
     }
 
     const manifest = await response.json();
