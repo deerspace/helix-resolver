@@ -33,7 +33,6 @@ async function loadManifest() {
       throw new Error("Invalid JSON returned from manifest URL");
     }
 
-    // Cache it locally
     await figma.clientStorage.setAsync(MANIFEST_CACHE_KEY, manifest);
 
     console.log("Loaded manifest from network:", manifest.version);
@@ -57,10 +56,8 @@ async function loadManifest() {
 async function main() {
   try {
     const manifest = await loadManifest();
-
     figma.notify("Manifest loaded: " + manifest.version);
     console.log("Manifest contents:", manifest);
-
   } catch (err) {
     console.error(err);
   }
