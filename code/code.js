@@ -11,7 +11,7 @@ async function loadManifest() {
   try {
     const response = await fetch(MANIFEST_URL);
 
-    console.log("Fetch status:", response.status);
+    console.log("🔥 HELIX FETCH STATUS:", response.status);
     console.log("Fetch URL:", MANIFEST_URL);
 
     if (!response.ok) {
