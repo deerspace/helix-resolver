@@ -111,13 +111,21 @@ if (parts.length > 1) {
   }
 }
 
-      // Replace original node
-      instance.x = node.x;
-      instance.y = node.y;
+// Replace original node safely
+const parent = node.parent;
 
-      figma.currentPage.appendChild(instance);
-      node.remove();
-    }
+if (!parent) continue;
+
+const index = parent.children.indexOf(node);
+
+// Match size before insertion
+instance.resize(node.width, node.height);
+
+// Insert at exact same index
+parent.insertChild(index, instance);
+
+// Remove placeholder
+node.remove();
 
     figma.notify("Helix resolve complete");
 
