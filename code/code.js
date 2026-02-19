@@ -1,5 +1,5 @@
 // ========================================
-// HELIX RESOLVER — FINAL (Replace Mode)
+// HELIX RESOLVER — STABLE VERSION
 // ========================================
 
 const MANIFEST_URL =
@@ -19,14 +19,14 @@ async function main() {
   try {
     const manifest = await loadManifest();
 
-    const taggedNodes = figma.currentPage.findAll(
-      node =>
+    const taggedNodes = figma.currentPage.findAll(function (node) {
+      return (
         typeof node.name === "string" &&
-        node.name.startsWith("ds:")
-    );
+        node.name.indexOf("ds:") === 0
+      );
+    });
 
     for (const node of taggedNodes) {
-
       const tag = node.name.replace("ds:", "");
       const parts = tag.split(".");
 
@@ -44,88 +44,72 @@ async function main() {
 
       const instance = component.createInstance();
 
-// Apply variant props safely
-if (parts.length > 1) {
-  for (let i = 1; i < parts.length; i++) {
-    const split = parts[i].split("=");
+      // Apply variant props safely
+      if (parts.length > 1) {
+        for (let i = 1; i < parts.length; i++) {
+          const split = parts[i].split("=");
 
-    if (split.length !== 2) continue;
+          if (split.length !== 2) continue;
 
-    const rawPropName = split[0];
-    const rawPropValue = split[1];
+          const rawPropName = split[0];
+          const rawPropValue = split[1];
 
-    const availableProps = instance.variantProperties;
-    if (!availableProps) continue;
+          const availableProps = instance.variantProperties;
+          if (!availableProps) continue;
 
-    // Find matching prop name (case-insensitive)
-    let actualPropName = null;
+          let actualPropName = null;
 
-    for (const key in availableProps) {
-      if (key.toLowerCase() === rawPropName.toLowerCase()) {
-        actualPropName = key;
-        break;
-      }
-    }
+          for (const key in availableProps) {
+            if (key.toLowerCase() === rawPropName.toLowerCase()) {
+              actualPropName = key;
+              break;
+            }
+          }
 
-    if (!actualPropName) {
-      console.warn("Variant property not found:", rawPropName);
-      continue;
-    }
+          if (!actualPropName) continue;
 
-    // Get allowed values from main component
-    const mainComponent = instance.mainComponent;
-    const variantDefs = mainComponent.variantProperties;
+          const mainComponent = instance.mainComponent;
+          const variantDefs = mainComponent.variantProperties;
 
-    let actualValue = null;
+          let actualValue = null;
 
-    if (
-      variantDefs &&
-      variantDefs[actualPropName] &&
-      variantDefs[actualPropName].values
-    ) {
-      const values = variantDefs[actualPropName].values;
+          if (
+            variantDefs &&
+            variantDefs[actualPropName] &&
+            variantDefs[actualPropName].values
+          ) {
+            const values = variantDefs[actualPropName].values;
 
-      for (let j = 0; j < values.length; j++) {
-        if (values[j].toLowerCase() === rawPropValue.toLowerCase()) {
-          actualValue = values[j];
-          break;
+            for (let j = 0; j < values.length; j++) {
+              if (
+                values[j].toLowerCase() ===
+                rawPropValue.toLowerCase()
+              ) {
+                actualValue = values[j];
+                break;
+              }
+            }
+          }
+
+          if (!actualValue) continue;
+
+          instance.setProperties({
+            [actualPropName]: actualValue
+          });
         }
       }
+
+      // Replace original node safely (Auto Layout safe)
+      const parent = node.parent;
+      if (!parent) continue;
+
+      const index = parent.children.indexOf(node);
+
+      instance.resize(node.width, node.height);
+
+      parent.insertChild(index, instance);
+      node.remove();
     }
-
-    if (!actualValue) {
-      console.warn("Variant value not found:", rawPropValue);
-      continue;
-    }
-
-    instance.setProperties({
-      [actualPropName]: actualValue
-    });
-
-    console.log(
-      "Applied variant:",
-      actualPropName,
-      "=",
-      actualValue
-    );
-  }
-}
-
-// Replace original node safely
-const parent = node.parent;
-
-if (!parent) continue;
-
-const index = parent.children.indexOf(node);
-
-// Match size before insertion
-instance.resize(node.width, node.height);
-
-// Insert at exact same index
-parent.insertChild(index, instance);
-
-// Remove placeholder
-node.remove();
 
     figma.notify("Helix resolve complete");
 
