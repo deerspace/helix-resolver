@@ -1,5 +1,5 @@
 // ========================================
-// HELIX RESOLVER — STABLE VERSION
+// HELIX RESOLVER — PRODUCTION STABLE
 // ========================================
 
 const MANIFEST_URL =
@@ -27,6 +27,7 @@ async function main() {
     });
 
     for (const node of taggedNodes) {
+
       const tag = node.name.replace("ds:", "");
       const parts = tag.split(".");
 
@@ -44,9 +45,13 @@ async function main() {
 
       const instance = component.createInstance();
 
-      // Apply variant props safely
+      // ==========================
+      // Apply Variant Props Safely
+      // ==========================
+
       if (parts.length > 1) {
         for (let i = 1; i < parts.length; i++) {
+
           const split = parts[i].split("=");
 
           if (split.length !== 2) continue;
@@ -99,15 +104,45 @@ async function main() {
         }
       }
 
-      // Replace original node safely (Auto Layout safe)
+      // ==========================
+      // Replace Placeholder Safely
+      // ==========================
+
       const parent = node.parent;
       if (!parent) continue;
 
       const index = parent.children.indexOf(node);
 
+      // Insert first to inherit correct coordinate space
+      parent.insertChild(index, instance);
+
+      // Match size
       instance.resize(node.width, node.height);
 
-      parent.insertChild(index, instance);
+      const parentIsAutoLayout =
+        parent.layoutMode === "HORIZONTAL" ||
+        parent.layoutMode === "VERTICAL";
+
+      if (parentIsAutoLayout) {
+        // Preserve Auto Layout props
+        if ("layoutAlign" in node) {
+          instance.layoutAlign = node.layoutAlign;
+        }
+
+        if ("layoutGrow" in node) {
+          instance.layoutGrow = node.layoutGrow;
+        }
+      } else {
+        // Absolute positioning
+        instance.x = node.x;
+        instance.y = node.y;
+      }
+
+      // Preserve constraints
+      if ("constraints" in node) {
+        instance.constraints = node.constraints;
+      }
+
       node.remove();
     }
 
